@@ -7,7 +7,7 @@
         在外层包一个自己创建的promise对象
         在请求出错时, 不reject(error), 而是显示错误提示
 
-    2. 优化2: 异步得到不是 reponse, 而是 response.data
+    2. 优化2: 异步得到不是 response, 而是 response.data
         在请求成功 resolve 时: resolve(response.data)
 
  */
@@ -20,7 +20,6 @@ export default function ajax(
     data = {},
     type = 'GET'
 ) {
-
     return new Promise((resolve, reject) => {
         let promise
         // 1. 执行异步ajax请求
@@ -45,8 +44,6 @@ export default function ajax(
             message.error('请求出错了: ' + error.message)
         })
     })
-
-
 }
 
 // 请求登陆接口

@@ -2,10 +2,14 @@
     用户登陆的路由组件
 */
 import React, {Component} from 'react';
-import {Button, Form, Icon, Input,} from 'antd';
+import {Redirect} from 'react-router-dom'
+import {Button, Form, Icon, Input, message} from 'antd';
 
 import logo from './images/logo.png';
 import './login.less';
+import {reqLogin} from '../../api'
+import memoryUtils from '../../utils/memoryUtils'
+import storageUtils from '../../utils/storageUtils'
 
 const Item = Form.Item; // 不能写在import之前
 
@@ -20,11 +24,34 @@ class Login extends Component {
         // console.log('handleSubmit()', values)
 
         // 对所有表单字段进行检验
-        this.props.form.validateFields((err, values) => {
+        this.props.form.validateFields(async (err, values) => {
             console.log(err);
             if (!err) {
-                console.log('提交登陆的ajax请求', values);
-                const {username, password} = values;
+                console.log('提交登陆的ajax请求', values)
+                const {username, password} = values
+
+                const result = await reqLogin(username, password) // {status: 0, data: user}  {status: 1, msg: 'xxx'}
+                console.log('请求成功', result)
+                if (result.status === 0) { // 登陆成功
+                    // 提示登陆成功
+                    message.success('登陆成功')
+
+                    /* 保存user */
+                    const user = result.data
+                    // 保存在内存中
+                    memoryUtils.user = user
+                    // 保存到 local 中
+                    storageUtils.saveUser(user)
+
+                    // 跳转到管理界面 (不需要再回退回到登陆)
+                    this.props.history.replace('/')  // 不能回退上一步
+                    // this.props.history.push('/')    // 能回退上一步
+
+                } else {
+                    // 提示错误信息
+                    message.error(result.msg)
+                }
+
             } else {
                 console.log('检验失败!')
             }
@@ -44,7 +71,7 @@ class Login extends Component {
     */
     validatePwd = (rule, value, callback) => {
         // console.log('validatePwd()', rule, value)
-        if(!value) {
+        if (!value) {
             callback('密码必须输入');
         } else if (value.length < 4) {
             callback('密码长度不能小于4位');
@@ -61,10 +88,15 @@ class Login extends Component {
 
     render() {
 
+        // 如果用户已经登陆, 自动跳转到管理界面
+        const user = memoryUtils.user
+        if (user && user._id) {
+            return <Redirect to='/'/>
+        }
+
         // 得到具强大功能的 form 对象
         const form = this.props.form;
-
-        const { getFieldDecorator } = form;
+        const {getFieldDecorator} = form;
 
         return (
             <div className="login">
@@ -87,13 +119,14 @@ class Login extends Component {
                                 getFieldDecorator('username', { // 配置对象: 属性名是特定的一些名称
                                     // 声明式验证: 直接使用别人定义好的验证规则进行验证
                                     rules: [
-                                        { required: true, whitespace: true, message: '用户名必须输入' },
-                                        { min: 4, message: '用户名至少4位' },
-                                        { max: 12, message: '用户名最多12位' },
-                                        { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名必须是英文、数字或下划线组成' },
+                                        {required: true, whitespace: true, message: '用户名必须输入'},
+                                        {min: 4, message: '用户名至少4位'},
+                                        {max: 12, message: '用户名最多12位'},
+                                        {pattern: /^[a-zA-Z0-9_]+$/, message: '用户名必须是英文、数字或下划线组成'},
                                     ],
                                     initialValue: 'admin', // 初始值
-                                })(<Input prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="用户名"/>)
+                                })(<Input prefix={<Icon type="user" style={{color: 'rgba(0,0,0,.25)'}}/>}
+                                          placeholder="用户名"/>)
                             }
                         </Item>
                         <Form.Item>
@@ -106,7 +139,7 @@ class Login extends Component {
                                     ]
                                 })(
                                     <Input
-                                        prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                        prefix={<Icon type="lock" style={{color: 'rgba(0,0,0,.25)'}}/>}
                                         type="password"
                                         placeholder="密码"
                                     />
@@ -120,7 +153,6 @@ class Login extends Component {
         );
     }
 }
-
 
 
 /*
@@ -153,4 +185,20 @@ export default WrapLogin;
 /*
     1. 前台表单验证
     2. 收集表单输入数据
+ */
+
+
+/*
+async - await
+
+1. 作用?
+   简化 promise 对象的使用: 不用再使用 then() 来指定成功/失败的回调函数
+   以同步编码(没有回调函数了)方式实现异步流程
+
+2. 哪里写await?
+    在返回 promise 的表达式左侧写 await: 不想要 promise, 想要 promise 异步执行的成功的 value 数据
+
+3. 哪里写async?
+    await所在函数(最近的)定义的左侧写async
+
  */
