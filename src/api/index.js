@@ -4,6 +4,7 @@
     每个函数的返回值都是 promise
 
 基本要求: 能根据接口文档定义接口请求函数
+
  */
 import jsonp from 'jsonp'
 import {message} from 'antd'
@@ -22,20 +23,11 @@ export function reqLogin(username, password) {
 export const reqLogin = (username, password) => ajax(BASE + '/login', {username, password}, 'POST')
 
 // 获取一级/二级分类的列表
-export const reqCategorys = (parentId) => ajax(BASE + '/manage/category/list', {parentId})
-
+export const reqCategoryList = (parentId) => ajax(BASE + '/manage/category/list', {parentId})
 // 添加分类
-export const reqAddCategory = (categoryName, parentId) => ajax(BASE + '/manage/category/add', {
-    categoryName,
-    parentId
-}, 'POST')
-
+export const reqAddCategory = (categoryName, parentId) => ajax(BASE + '/manage/category/add', {categoryName, parentId}, 'POST')
 // 更新分类
-export const reqUpdateCategory = ({categoryId, categoryName}) => ajax(BASE + '/manage/category/update', {
-    categoryId,
-    categoryName
-}, 'POST')
-
+export const reqUpdateCategory = ({categoryId, categoryName}) => ajax(BASE + '/manage/category/update', {categoryId, categoryName}, 'POST')
 // 获取一个分类
 export const reqCategory = (categoryId) => ajax(BASE + '/manage/category/info', {categoryId})
 
@@ -43,10 +35,7 @@ export const reqCategory = (categoryId) => ajax(BASE + '/manage/category/info', 
 export const reqProducts = (pageNum, pageSize) => ajax(BASE + '/manage/product/list', {pageNum, pageSize})
 
 // 更新商品的状态(上架/下架)
-export const reqUpdateStatus = (productId, status) => ajax(BASE + '/manage/product/updateStatus', {
-    productId,
-    status
-}, 'POST')
+export const reqUpdateStatus = (productId, status) => ajax(BASE + '/manage/product/updateStatus', {productId, status}, 'POST')
 
 
 /*
